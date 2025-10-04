@@ -1,6 +1,34 @@
+"use client";
+
 import Image from "next/image";
+import { useState, useEffect } from "react";
 
 export default function Home() {
+  const [otp, setOtp] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setOtp(e.target.value);
+  };
+
+  useEffect(() => {
+    if ("OTPCredential" in window) {
+      const ac = new AbortController();
+      navigator.credentials
+        .get({
+          otp: { transport: ["sms"] },
+          signal: ac.signal,
+        })
+        .then((otp: any) => {
+          console.log(otp?.code);
+          setOtp(otp?.code);
+          ac.abort();
+        })
+        .catch((err: any) => {
+          ac.abort();
+          console.error(err);
+        });
+    }
+  }, []);
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
@@ -49,6 +77,25 @@ export default function Home() {
           >
             Read our docs
           </a>
+        </div>
+
+        <div className="bg-blue-400 w-full rounded-2xl p-6">
+          <div className="flex flex-col items-center gap-4">
+            <h2 className="text-white text-xl font-semibold">
+              OTP Verification
+            </h2>
+            <input
+              type="text"
+              value={otp}
+              onChange={handleChange}
+              placeholder="Enter OTP code"
+              className="w-full max-w-xs px-4 py-3 rounded-lg border-2 border-white/20 bg-white/10 text-white placeholder-white/70 focus:outline-none focus:border-white/50 focus:bg-white/20 transition-all duration-200 text-center text-lg font-mono tracking-widest"
+              autoComplete="one-time-code"
+            />
+            <p className="text-white/80 text-sm text-center">
+              The OTP will be automatically filled when received via SMS
+            </p>
+          </div>
         </div>
       </main>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
