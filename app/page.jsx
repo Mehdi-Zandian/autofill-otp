@@ -1,31 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
-// Type declarations for WebOTP API
-declare global {
-  interface Window {
-    OTPCredential: any;
-  }
-}
-
-interface OTPCredential extends Credential {
-  code: string;
-}
-
-interface CredentialRequestOptions {
-  otp: {
-    transport: string[];
-  };
-  signal?: AbortSignal;
-}
-
 export default function Home() {
   const [otp, setOtp] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e) => {
     setOtp(e.target.value);
   };
 
@@ -36,14 +17,13 @@ export default function Home() {
         .get({
           otp: { transport: ["sms"] },
           signal: ac.signal,
-        } as CredentialRequestOptions)
-        .then((credential: Credential | null) => {
-          const otpCredential = credential as OTPCredential;
-          console.log(otpCredential?.code);
-          setOtp(otpCredential?.code || "");
+        })
+        .then((otp) => {
+          console.log(otp?.code);
+          setOtp(otp?.code);
           ac.abort();
         })
-        .catch((err: any) => {
+        .catch((err) => {
           ac.abort();
           console.error(err);
         });
